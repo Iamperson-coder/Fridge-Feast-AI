@@ -41,4 +41,16 @@ export const api = {
       },
     },
   },
+  ingredients: {
+    search: {
+      method: "GET" as const,
+      path: "/api/ingredients/search",
+      input: z.object({
+        q: z.string(),
+      }),
+      responses: {
+        200: z.array(z.string()),
+      },
+    },
+  },
 };

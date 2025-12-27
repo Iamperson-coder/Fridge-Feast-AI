@@ -69,5 +69,18 @@ export async function registerRoutes(
     res.json(recipe);
   });
 
+  app.get(api.ingredients.search.path, async (req, res) => {
+    const query = req.query.q as string;
+    if (!query) return res.json([]);
+    const matches = await storage.searchIngredients(query);
+    res.json(matches);
+  });
+
+  // Seed some common ingredients including maple syrup
+  await storage.seedIngredients([
+    "Maple Syrup", "Flour", "Sugar", "Butter", "Eggs", "Milk", 
+    "Chicken", "Beef", "Pork", "Garlic", "Onion", "Salt", "Pepper"
+  ]);
+
   return httpServer;
 }
