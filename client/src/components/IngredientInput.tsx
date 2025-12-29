@@ -1,6 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Plus, X, Carrot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@shared/routes";
 
 interface IngredientInputProps {
   ingredients: string[];
@@ -10,13 +12,38 @@ interface IngredientInputProps {
 
 export function IngredientInput({ ingredients, onChange, disabled }: IngredientInputProps) {
   const [input, setInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  const addIngredient = () => {
-    const trimmed = input.trim();
+  const { data: suggestions = [] } = useQuery({
+    queryKey: [api.ingredients.search.path, { q: input }],
+    queryFn: async () => {
+      if (input.length < 2) return [];
+      const res = await fetch(`${api.ingredients.search.path}?q=${encodeURIComponent(input)}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: input.length >= 2,
+  });
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const addIngredient = (name?: string) => {
+    const value = name || input;
+    const trimmed = value.trim();
     if (trimmed && !ingredients.includes(trimmed)) {
       onChange([...ingredients, trimmed]);
       setInput("");
+      setShowSuggestions(false);
       inputRef.current?.focus();
     }
   };
@@ -42,7 +69,11 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder="Enter an ingredient (e.g. Chicken, Basil, Tomatoes)"
@@ -55,8 +86,27 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
             transition-all duration-200 paper-shadow
           "
         />
+        
+        {showSuggestions && suggestions.length > 0 && (
+          <div 
+            ref={suggestionsRef}
+            className="absolute z-50 w-full mt-1 bg-white border border-primary/20 rounded-md shadow-xl max-h-60 overflow-auto"
+          >
+            {suggestions.map((suggestion: string) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => addIngredient(suggestion)}
+                className="w-full px-4 py-3 text-left font-serif hover:bg-primary/5 transition-colors border-b border-primary/5 last:border-0"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+
         <button
-          onClick={addIngredient}
+          onClick={() => addIngredient()}
           disabled={!input.trim() || disabled}
           className="
             absolute right-2 top-1/2 -translate-y-1/2
