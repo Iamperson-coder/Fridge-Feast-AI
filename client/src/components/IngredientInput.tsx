@@ -44,18 +44,11 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
       onChange([...ingredients, trimmed]);
       setInput("");
       setShowSuggestions(false);
-      inputRef.current?.focus();
-    } else if (trimmed === input && trimmed && !ingredients.includes(trimmed)) {
-      // If user typed something and pressed enter/clicked add, but no suggestion was selected
-      onChange([...ingredients, trimmed]);
-      setInput("");
-      setShowSuggestions(false);
-      inputRef.current?.focus();
+      // We don't need to focus if a suggestion was clicked
+      if (!name) {
+        inputRef.current?.focus();
+      }
     }
-  };
-
-  const removeIngredient = (ing: string) => {
-    onChange(ingredients.filter((i) => i !== ing));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -113,6 +106,7 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
 
         <button
           onClick={() => addIngredient()}
+          type="button"
           disabled={!input.trim() || disabled}
           className="
             absolute right-2 top-1/2 -translate-y-1/2
