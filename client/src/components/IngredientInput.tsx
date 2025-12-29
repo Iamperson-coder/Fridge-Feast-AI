@@ -45,6 +45,12 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
       setInput("");
       setShowSuggestions(false);
       inputRef.current?.focus();
+    } else if (trimmed === input && trimmed && !ingredients.includes(trimmed)) {
+      // If user typed something and pressed enter/clicked add, but no suggestion was selected
+      onChange([...ingredients, trimmed]);
+      setInput("");
+      setShowSuggestions(false);
+      inputRef.current?.focus();
     }
   };
 
