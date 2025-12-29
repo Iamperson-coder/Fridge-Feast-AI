@@ -51,6 +51,10 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
     }
   };
 
+  const removeIngredient = (ing: string) => {
+    onChange(ingredients.filter((i) => i !== ing));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
