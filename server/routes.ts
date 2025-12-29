@@ -21,33 +21,46 @@ export async function registerRoutes(
         You are a gourmet chef. Create a delicious recipe using these ingredients: ${ingredients.join(", ")}.
         You can assume basic pantry staples (salt, pepper, oil, etc.).
         
-        Format the response clearly with:
-        - A creative, appetizing Title
-        - A brief description/story
-        - List of Ingredients
-        - Step-by-step Instructions
+        CRITICAL: Your response MUST be a valid JSON object with the following structure:
+        {
+          "title": "A creative, appetizing Title",
+          "description": "A brief description/story",
+          "ingredients_list": ["item 1", "item 2"],
+          "instructions": ["step 1", "step 2"]
+        }
         
-        Keep the tone elegant and restaurant-like.
+        Do not include any markdown formatting outside the JSON object.
       `;
 
       const response = await openai.chat.completions.create({
         model: "gpt-5.1",
         messages: [
-          { role: "system", content: "You are a world-class chef helping home cooks." },
+          { role: "system", content: "You are a world-class chef helping home cooks. You only speak in JSON." },
           { role: "user", content: prompt }
         ],
+        response_format: { type: "json_object" },
         max_completion_tokens: 1000,
       });
 
-      const content = response.choices[0].message.content || "Could not generate recipe.";
+      const responseText = response.choices[0].message.content || "{}";
+      const recipeData = JSON.parse(responseText);
       
-      // Extract title from content (simple heuristic: first line or "Title:" prefix)
-      const titleMatch = content.match(/^#? ?Title:? ?(.+)$/m) || content.match(/^#? ?(.+)$/m);
-      const title = titleMatch ? titleMatch[1].trim() : "Chef's Creation";
+      const title = recipeData.title || "Chef's Creation";
+      const formattedContent = `
+# ${title}
+
+${recipeData.description || ""}
+
+### Ingredients
+${(recipeData.ingredients_list || []).map((i: string) => `- ${i}`).join('\n')}
+
+### Instructions
+${(recipeData.instructions || []).map((s: string, idx: number) => `${idx + 1}. ${s}`).join('\n')}
+      `.trim();
 
       const recipe = await storage.createRecipe({
         title,
-        content,
+        content: formattedContent,
         ingredients,
       });
 
