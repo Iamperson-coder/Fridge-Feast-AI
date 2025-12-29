@@ -143,6 +143,7 @@ export function IngredientInput({ ingredients, onChange, disabled }: IngredientI
                 >
                   {ing}
                   <button
+                    type="button"
                     onClick={() => removeIngredient(ing)}
                     disabled={disabled}
                     className="p-1 hover:bg-destructive/10 hover:text-destructive rounded-full transition-colors"
