@@ -24,10 +24,13 @@ export async function registerRoutes(
         CRITICAL: Your response MUST be a valid JSON object with the following structure:
         {
           "title": "A creative, appetizing Title",
-          "description": "A brief description/story",
+          "description": "A brief description/story including the cuisine's origin (e.g. Middle Eastern, Western, African, Italian, Turkish, etc.)",
+          "cuisine": "The specific cuisine type",
           "ingredients_list": ["item 1", "item 2"],
           "instructions": ["step 1", "step 2"]
         }
+        
+        Explore diverse culinary traditions such as Middle Eastern, Western, African, Italian, Turkish, Asian, and Latin American. Choose the one that best suits the provided ingredients.
         
         Do not include any markdown formatting outside the JSON object.
       `;
@@ -48,6 +51,8 @@ export async function registerRoutes(
       const title = recipeData.title || "Chef's Creation";
       const formattedContent = `
 # ${title}
+
+**Cuisine:** ${recipeData.cuisine || "International"}
 
 ${recipeData.description || ""}
 
