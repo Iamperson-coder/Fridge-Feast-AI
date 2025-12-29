@@ -36,7 +36,7 @@ export async function registerRoutes(
           { role: "system", content: "You are a world-class chef helping home cooks." },
           { role: "user", content: prompt }
         ],
-        max_tokens: 1000,
+        max_completion_tokens: 1000,
       });
 
       const content = response.choices[0].message.content || "Could not generate recipe.";
