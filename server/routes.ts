@@ -18,8 +18,8 @@ export async function registerRoutes(
       const { ingredients } = api.recipes.generate.input.parse(req.body);
 
       const prompt = `
-        You are a gourmet chef. Create a delicious recipe using these ingredients: ${ingredients.join(", ")}.
-        You can assume basic pantry staples (salt, pepper, oil, etc.).
+        You are a gourmet chef. Create a delicious recipe using ONLY these ingredients: ${ingredients.join(", ")}.
+        You can assume basic pantry staples (salt, pepper, oil, water) are available, but NO other major ingredients should be added.
         
         CRITICAL: Your response MUST be a valid JSON object with the following structure:
         {
