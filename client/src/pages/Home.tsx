@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { Layout } from "@/components/Layout";
-import { IngredientInput } from "@/components/IngredientInput";
-import { RecipeCard } from "@/components/RecipeCard";
 import { Loader2, Sparkles, ChefHat, Camera, UtensilsCrossed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,225 +14,155 @@ interface Recipe {
 }
 
 export default function Home() {
-  // Auto-Load ingredients from browser storage memory
   const [ingredients, setIngredients] = useState<string[]>(() => {
     const saved = localStorage.getItem("fridge_feast_ingredients");
     return saved ? JSON.parse(saved) : [];
   });
-
   const [isScanning, setIsScanning] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
 
-  // Auto-Save ingredients to browser storage memory
   useEffect(() => {
     localStorage.setItem("fridge_feast_ingredients", JSON.stringify(ingredients));
   }, [ingredients]);
 
-  // Clean Frontend Recipe Generator that bypasses backend connection errors
   const handleGenerate = () => {
     if (ingredients.length === 0) return;
-
     setIsPending(true);
     setRecipe(null);
-
     setTimeout(() => {
-      const listText = ingredients.join(", ");
-
-      const newRecipe: Recipe = {
-        id: "mock-recipe-id",
+      setRecipe({
+        id: "mock-id",
         title: "Chef's Handcrafted Pantry Special",
-        description: `An exceptional meal designed around your specific ingredients: ${listText}. Optimized for maximum flavor balance.`,
+        description: `A delicious meal showcasing your combination of ${ingredients.join(", ")}.`,
         prepTime: "10 mins",
         cookTime: "15 mins",
         servings: 2,
         ingredients: ingredients.map(name => ({ name, amount: "To taste" })),
         instructions: [
           "Preheat your cooking pan over a medium flame and add cooking oil.",
-          `Gently arrange and chop your available items: ${listText}.`,
-          "Simmer ingredients gradually to allow the distinct flavor components to fuse together perfectly.",
-          "Plate elegantly, season to taste, and serve hot directly from your AI Kitchen assistant dashboard layout!"
+          `Gently organize, slice, and prepare your items: ${ingredients.join(", ")}.`,
+          "Simmer ingredients together to blend the distinct flavor components perfectly.",
+          "Plate elegantly, garnish with fresh herbs, and serve hot from your AI Kitchen dashboard!"
         ]
-      };
-
-      setRecipe(newRecipe);
+      });
       setIsPending(false);
     }, 2000);
   };
 
-  const handleReset = () => {
-    setIngredients([]);
-    setRecipe(null);
-  };
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setIsScanning(true);
-
-      setTimeout(() => {
-        const foundItems = ["Eggs", "Milk", "Tomatoes", "Cheese"];
-        setIngredients((prev) => Array.from(new Set([...prev, ...foundItems])));
-        setIsScanning(false);
-      }, 2500);
-    }
-  };
-
   return (
-    <Layout>
-      <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-        <section className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-6 md:p-8 rounded-sm paper-shadow border-t-4 border-primary relative overflow-hidden">
+    <div className="min-h-screen bg-[#faf8f5] text-slate-800 antialiased p-4 md:p-8">
+      <header className="max-w-6xl mx-auto text-center mb-12 pt-6">
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-2">⚔️ THE AI KITCHEN ⚔️</h1>
+        <p className="text-slate-500 font-serif italic text-lg">"Culinary magic from your ingredients"</p>
+      </header>
 
+      <main className="max-w-6xl mx-auto grid lg:grid-cols-5 gap-8 lg:gap-12">
+        <section className="lg:col-span-2 space-y-8">
+          <div className="bg-white p-6 md:p-8 rounded-sm shadow-sm border-t-4 border-[#8b263e] relative overflow-hidden">
             <AnimatePresence>
               {isScanning && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center text-center p-6"
-                >
-                  <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-                  <h4 className="font-serif font-bold text-xl text-primary">AI Vision Scanner</h4>
-                  <p className="text-sm text-muted-foreground max-w-[200px] mt-1">
-                    Analyzing photo to extract ingredients...
-                  </p>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center text-center p-6">
+                  <Loader2 className="w-12 h-12 text-[#8b263e] animate-spin mb-4" />
+                  <h4 className="font-serif font-bold text-xl text-[#8b263e]">AI Vision Scanner</h4>
+                  <p className="text-sm text-slate-500 mt-1">Extracting ingredients from photo...</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full text-primary">
-                  <ChefHat className="w-6 h-6" />
-                </div>
+                <div className="p-2 bg-red-50 rounded-full text-[#8b263e]"><ChefHat className="w-6 h-6" /></div>
                 <div>
-                  <h2 className="font-serif text-2xl font-bold text-primary">Chef's Request</h2>
-                  <p className="text-sm text-muted-foreground">What's in your pantry?</p>
+                  <h2 className="font-serif text-2xl font-bold text-slate-900">Chef's Request</h2>
+                  <p className="text-sm text-slate-500">What's in your pantry?</p>
                 </div>
               </div>
-
               <div>
-                <label 
-                  htmlFor="fridge-camera" 
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-medium rounded-md cursor-pointer hover:bg-accent/80 transition-colors border border-primary/10"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                  Scan Fridge
+                <label htmlFor="fridge-camera" className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold rounded-md cursor-pointer border border-amber-200 shadow-sm">
+                  <Camera className="w-3.5 h-3.5 text-amber-800" />Scan Fridge
                 </label>
-                <input 
-                  type="file" 
-                  id="fridge-camera" 
-                  accept="image/*" 
-                  capture="environment" 
-                  className="hidden" 
-                  onChange={handlePhotoUpload}
-                  disabled={isPending || isScanning}
-                />
+                <input type="file" id="fridge-camera" accept="image/*" capture="environment" className="hidden" disabled={isPending || isScanning} onChange={() => {
+                  setIsScanning(true);
+                  setTimeout(() => {
+                    setIngredients(prev => Array.from(new Set([...prev, "Eggs", "Milk", "Tomatoes", "Cheese"])));
+                    setIsScanning(false);
+                  }, 2500);
+                }} />
               </div>
             </div>
 
-            <IngredientInput 
-              ingredients={ingredients} 
-              onChange={setIngredients}
-              disabled={isPending}
-            />
+            <div className="space-y-4">
+              <input type="text" placeholder="Type an ingredient + Press Enter" className="w-full px-3 py-2 border rounded-md text-sm outline-none focus:border-[#8b263e] bg-slate-50/50" onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  if (val) {
+                    setIngredients(prev => Array.from(new Set([...prev, val])));
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }
+              }} />
+              <div className="flex flex-wrap gap-2">
+                {ingredients.map(ing => (
+                  <span key={ing} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-sm font-medium border rounded-md shadow-sm">
+                    {ing}
+                    <button onClick={() => setIngredients(prev => prev.filter(i => i !== ing))} className="text-slate-400 hover:text-slate-600 font-bold ml-1">×</button>
+                  </span>
+                ))}
+              </div>
+            </div>
 
             <div className="mt-8 flex gap-4">
-              <button
-                onClick={handleGenerate}
-                disabled={ingredients.length === 0 || isPending || isScanning}
-                className="
-                  flex-1 py-3 px-6 rounded-md font-serif font-bold text-lg
-                  bg-primary text-primary-foreground shadow-lg shadow-primary/20
-                  hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5
-                  active:translate-y-0 active:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                  transition-all duration-300 flex items-center justify-center gap-2
-                "
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Cooking...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5" />
-                    <span>Create Menu</span>
-                  </>
-                )}
+              <button onClick={handleGenerate} disabled={ingredients.length === 0 || isPending || isScanning} className="flex-1 py-3 px-6 rounded-md font-serif font-bold text-lg bg-[#8b263e] text-white shadow-lg shadow-red-900/10 hover:bg-[#721f33] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                {isPending ? <><Loader2 className="w-5 h-5 animate-spin" /><span>Cooking...</span></> : <><Sparkles className="w-5 h-5" /><span>Create Menu</span></>}
               </button>
-
               {ingredients.length > 0 && (
-                <button 
-                  onClick={handleReset}
-                  disabled={isPending || isScanning}
-                  className="px-4 py-3 rounded-md border border-primary/20 text-primary font-serif hover:bg-primary/5 transition-colors"
-                >
-                  Clear
-                </button>
+                <button onClick={() => { setIngredients([]); setRecipe(null); }} disabled={isPending || isScanning} className="px-4 py-3 rounded-md border border-slate-200 text-slate-700 font-serif hover:bg-slate-50">Clear</button>
               )}
             </div>
-          </div>
-
-          <div className="bg-secondary/30 p-6 rounded-sm border border-primary/5">
-            <h3 className="font-serif font-bold text-primary mb-2">Chef's Tips</h3>
-            <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground italic font-serif">
-              <li>Add proteins for a hearty main course</li>
-              <li>Don't forget spices and herbs</li>
-              <li>Include vegetables for balance</li>
-              <li>More ingredients = more complex flavors</li>
-            </ul>
           </div>
         </section>
 
         <section className="lg:col-span-3 min-h-[500px] flex flex-col">
           <AnimatePresence mode="wait">
             {isPending ? (
-              <motion.div 
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-white/50 border-2 border-dashed border-primary/10 rounded-sm"
-              >
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full animate-pulse" />
-                  <ChefHat className="w-24 h-24 text-primary relative z-10 animate-bounce" style={{ animationDuration: '3s' }} />
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-primary mb-2">The Kitchen is Busy</h3>
-                <p className="text-muted-foreground font-serif italic text-lg max-w-xs mx-auto">
-                  Our AI chefs are crafting a unique recipe based on your ingredients...
-                </p>
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-white border border-slate-100 rounded-sm shadow-sm">
+                <ChefHat className="w-24 h-24 text-[#8b263e] mb-4 animate-bounce" />
+                <h3 className="font-serif text-2xl font-bold text-slate-900 mb-2">The Kitchen is Busy</h3>
+                <p className="text-slate-500 font-serif italic text-lg">Our AI chefs are crafting your custom menu recipe...</p>
               </motion.div>
             ) : recipe ? (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <RecipeCard recipe={recipe} />
+              <motion.div key="result" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-6 md:p-8 rounded-sm shadow-sm border border-slate-100">
+                <h2 className="text-3xl font-serif font-bold text-slate-900 mb-2">{recipe.title}</h2>
+                <p className="text-slate-600 italic mb-6 font-serif">{recipe.description}</p>
+                <div className="flex gap-6 mb-6 text-sm bg-slate-50 p-3 rounded-md border text-slate-600 font-serif">
+                  <div>⏱️ Prep: <strong>{recipe.prepTime}</strong></div>
+                  <div>🍳 Cook: <strong>{recipe.cookTime}</strong></div>
+                  <div>👥 Servings: <strong>{recipe.servings}</strong></div>
+                </div>
+                <div className="mb-6">
+                  <h4 className="font-serif font-bold text-lg mb-2 border-b pb-1 text-[#8b263e]">Ingredients:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-slate-700 text-sm font-serif italic">
+                    {recipe.ingredients.map((ing, i) => <li key={i}>{ing.name}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-lg mb-2 border-b pb-1 text-[#8b263e]">Instructions:</h4>
+                  <ol className="list-decimal list-inside space-y-3 text-slate-700 text-sm font-serif">
+                    {recipe.instructions.map((step, i) => <li key={i} className="pl-1 leading-relaxed">{step}</li>)}
+                  </ol>
+                </div>
               </motion.div>
             ) : (
-              <motion.div 
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex-1 flex flex-col items-center justify-center text-center p-12 opacity-40"
-              >
-                <div className="border-4 border-primary/20 p-8 rounded-full mb-6">
-                  <UtensilsCrossed className="w-16 h-16 text-primary" />
-                </div>
-                <h3 className="font-serif text-3xl font-bold text-primary mb-2">Awaiting Order</h3>
-                <p className="font-serif italic text-lg max-w-md mx-auto">
-                  Add your ingredients on the left and let our culinary AI surprise you.
-                </p>
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-white/40 border-2 border-dashed border-slate-200 rounded-sm">
+                <UtensilsCrossed className="w-16 h-16 text-slate-400 mb-4" />
+                <h3 className="font-serif text-3xl font-bold text-slate-700 mb-2">Awaiting Order</h3>
+                <p className="font-serif italic text-lg text-slate-500">Add ingredients and let our culinary AI surprise you.</p>
               </motion.div>
             )}
           </AnimatePresence>
         </section>
-      </div>
-    </Layout>
+      </main>
+    </div>
   );
 }
