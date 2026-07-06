@@ -3,11 +3,12 @@ import { Layout } from "@/components/Layout";
 import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useGenerateRecipe } from "@/hooks/use-recipes";
-import { Loader2, Sparkles, ChefHat } from "lucide-react";
+import { Loader2, Sparkles, ChefHat, Camera, UtensilsCrossed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
   const { mutate: generateRecipe, data: recipe, isPending } = useGenerateRecipe();
 
   const handleGenerate = () => {
@@ -18,9 +19,26 @@ export default function Home() {
 
   const handleReset = () => {
     setIngredients([]);
-    // In a real app we might want to clear the recipe data too, 
-    // but react-query keeps it cached which is nice.
-    // We'll just let the new generation replace it.
+  };
+
+  // 📷 Simulated AI Photo Scanner
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setIsScanning(true);
+
+      // Simulate an AI vision analysis taking 2.5 seconds
+      setTimeout(() => {
+        const detectedIngredients = ["Eggs", "Milk", "Tomatoes", "Cheese"];
+
+        // Add unique items only to your current list
+        setIngredients((prev) => {
+          const combined = [...prev, ...detectedIngredients];
+          return Array.from(new Set(combined));
+        });
+
+        setIsScanning(false);
+      }, 2500);
+    }
   };
 
   return (
@@ -28,14 +46,55 @@ export default function Home() {
       <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
         {/* Input Section */}
         <section className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-6 md:p-8 rounded-sm paper-shadow border-t-4 border-primary">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary/10 rounded-full text-primary">
-                <ChefHat className="w-6 h-6" />
+          <div className="bg-white p-6 md:p-8 rounded-sm paper-shadow border-t-4 border-primary relative overflow-hidden">
+
+            {/* 🧠 Scanning Overlay */}
+            <AnimatePresence>
+              {isScanning && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center text-center p-6"
+                >
+                  <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+                  <h4 className="font-serif font-bold text-xl text-primary">AI Vision Scanner</h4>
+                  <p className="text-sm text-muted-foreground max-w-[200px] mt-1">
+                    Analyzing photo to extract ingredients...
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                  <ChefHat className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-primary">Chef's Request</h2>
+                  <p className="text-sm text-muted-foreground">What's in your pantry?</p>
+                </div>
               </div>
+
+              {/* 📸 Hidden Input & Visible Photo Trigger Button */}
               <div>
-                <h2 className="font-serif text-2xl font-bold text-primary">Chef's Request</h2>
-                <p className="text-sm text-muted-foreground">What's in your pantry?</p>
+                <label 
+                  htmlFor="fridge-camera" 
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-accent text-accent-foreground text-xs font-medium rounded-md cursor-pointer hover:bg-accent/80 transition-colors border border-primary/10"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  Scan Fridge
+                </label>
+                <input 
+                  type="file" 
+                  id="fridge-camera" 
+                  accept="image/*" 
+                  capture="environment" 
+                  className="hidden" 
+                  onChange={handlePhotoUpload}
+                  disabled={isPending || isScanning}
+                />
               </div>
             </div>
 
@@ -48,7 +107,7 @@ export default function Home() {
             <div className="mt-8 flex gap-4">
               <button
                 onClick={handleGenerate}
-                disabled={ingredients.length === 0 || isPending}
+                disabled={ingredients.length === 0 || isPending || isScanning}
                 className="
                   flex-1 py-3 px-6 rounded-md font-serif font-bold text-lg
                   bg-primary text-primary-foreground shadow-lg shadow-primary/20
@@ -70,11 +129,11 @@ export default function Home() {
                   </>
                 )}
               </button>
-              
+
               {ingredients.length > 0 && (
                 <button 
                   onClick={handleReset}
-                  disabled={isPending}
+                  disabled={isPending || isScanning}
                   className="px-4 py-3 rounded-md border border-primary/20 text-primary font-serif hover:bg-primary/5 transition-colors"
                 >
                   Clear
@@ -144,27 +203,5 @@ export default function Home() {
         </section>
       </div>
     </Layout>
-  );
-}
-
-function UtensilsCrossed(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m3 2 19 19" />
-      <path d="m2 22 5-5" />
-      <path d="m22 2-5 5" />
-      <path d="m8 8 5-5 5 5-5 5Z" />
-    </svg>
   );
 }
