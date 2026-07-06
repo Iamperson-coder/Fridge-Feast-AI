@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeCard } from "@/components/RecipeCard";
@@ -7,9 +7,19 @@ import { Loader2, Sparkles, ChefHat, Camera, UtensilsCrossed } from "lucide-reac
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
-  const [ingredients, setIngredients] = useState<string[]>([]);
+  // 📦 1. Auto-Load ingredients from browser memory when the page opens
+  const [ingredients, setIngredients] = useState<string[]>(() => {
+    const saved = localStorage.getItem("fridge_feast_ingredients");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [isScanning, setIsScanning] = useState(false);
   const { mutate: generateRecipe, data: recipe, isPending } = useGenerateRecipe();
+
+  // 💾 2. Auto-Save ingredients to browser memory whenever the list changes
+  useEffect(() => {
+    localStorage.setItem("fridge_feast_ingredients", JSON.stringify(ingredients));
+  }, [ingredients]);
 
   const handleGenerate = () => {
     if (ingredients.length > 0) {
