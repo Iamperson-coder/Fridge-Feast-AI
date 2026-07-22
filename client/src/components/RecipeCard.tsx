@@ -1,6 +1,6 @@
 import { Recipe } from "@shared/schema";
 import { format } from "date-fns";
-import { Scroll, Clock, ChefHat } from "lucide-react";
+import { Clock, ChefHat } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface RecipeCardProps {
@@ -10,7 +10,6 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, compact = false, onClick }: RecipeCardProps) {
-  // Simple check to differentiate display vs compact list view
   if (compact) {
     return (
       <motion.div
@@ -76,6 +75,22 @@ export function RecipeCard({ recipe, compact = false, onClick }: RecipeCardProps
         </div>
       </div>
 
+      {/* Dish image */}
+      {recipe.imageUrl && (
+        <>
+          <div className="ornament-divider mb-6">
+            <span>The Finished Dish</span>
+          </div>
+          <div className="mb-8 overflow-hidden rounded-sm border-2 border-primary/10 paper-shadow">
+            <img
+              src={recipe.imageUrl}
+              alt={`Photo of ${recipe.title}`}
+              className="w-full h-72 object-cover"
+            />
+          </div>
+        </>
+      )}
+
       <div className="ornament-divider">
         <span>Ingredients</span>
       </div>
@@ -100,7 +115,7 @@ export function RecipeCard({ recipe, compact = false, onClick }: RecipeCardProps
       </div>
 
       <div className="mt-12 pt-6 border-t border-dashed border-primary/20 flex justify-between items-center text-sm text-muted-foreground font-sans">
-        <span>Order #{recipe.id.toString().padStart(4, '0')}</span>
+        <span>Order #{recipe.id.toString().padStart(4, "0")}</span>
         <span>{format(new Date(recipe.createdAt), "PPP")}</span>
       </div>
     </motion.div>
